@@ -1,58 +1,63 @@
 package com.github.milyardo.freeio
 
-import java.nio.file.StandardOpenOption
+import java.nio.file.{Paths, StandardOpenOption}
+
+import com.github.milyardo.freeio.file.FileAlg
 
 /**
   * Created by zpowers on 3/12/16.
   */
 object FileApp extends App {
-  import file._
 
-  val prog = for {
-    aFile <- create("aFile.txt")
-    contents <- read(aFile)
-  } yield contents.map(_.toChar).mkString(",")
 
-  val prog2 = for {
-    bFile <- create("bFile.txt")
-    res <- write(bFile, "Goodbye, World!".getBytes)
-    contents <- read(bFile)
-  } yield contents.map(_.toChar).mkString(",")
+  def prog[F,P,C](fileAlg: FileAlg[F,P,C])(find: String => P) = {
+    import fileAlg._
+    for {
+      aFile <- create(find("aFile.txt"))
+      contents <- read(aFile)
+    } yield contents.map(_.toChar).mkString(",")
+  }
 
+  def prog2[F,P,C](fileAlg: FileAlg[F,P,C])(find: String => P) = {
+    import fileAlg._
+
+    for {
+      bFile <- create(find("bFile.txt"))
+      res <- write(bFile, "Goodbye, World!".getBytes)
+      contents <- read(bFile)
+    } yield contents.map(_.toChar).mkString(",")
+  }
 
   {
-    import jio._
-
     println(
-      benchMark(prog.foldMap(withJavaIO).unsafePerformSyncAttempt)
+      benchMark(prog(jio)(identity).foldMap(jio.withJavaIO).unsafePerformSyncAttempt)
     )
     println(
-      benchMark(prog2.foldMap(withJavaIO).unsafePerformSyncAttempt)
+      benchMark(prog2(jio)(identity).foldMap(jio.withJavaIO).unsafePerformSyncAttempt)
     )
   }
 
   {
-    import nio._
-
     println(
-      benchMark(prog.foldMap(withJavaNIO(StandardOpenOption.CREATE)).unsafePerformSyncAttempt)
+      benchMark(prog(nio)(n => Paths.get(n)).foldMap(nio.withJavaNIO(StandardOpenOption.CREATE))
+        .unsafePerformSyncAttempt)
     )
     println(
-      benchMark(prog2.foldMap(withJavaNIO(StandardOpenOption.CREATE)).unsafePerformSyncAttempt)
+      benchMark(prog2(nio)(n => Paths.get(n)).foldMap(nio.withJavaNIO(StandardOpenOption.CREATE))
+        .unsafePerformSyncAttempt)
     )
   }
 
   {
-    import pure._
     val files = Map(
       "aFile.txt" -> "Hello".getBytes,
       "bFile.txt" -> "Goodbye".getBytes
     )
     println(
-      benchMark(prog.foldMap(withPureFiles(files)))
+      benchMark(prog(pure)(identity).foldMap(pure.withPureFiles(files)))
     )
     println(
-      benchMark(prog2.foldMap(withPureFiles(files)))
+      benchMark(prog2(pure)(identity).foldMap(pure.withPureFiles(files)))
     )
   }
 

@@ -10,26 +10,15 @@ import java.nio.file.{Path => JPath, OpenOption, Files, Paths}
 /**
   * Created by zpowers on 3/12/16.
   */
-object nio {
-
-  private[nio] case class NIOPath(path: JPath) extends Path
-  private[nio] case class NIOFileHandle(jPath: JPath) extends File
+object nio extends FileAlg[JPath, JPath, Nothing] {
 
   def withJavaNIO(options: OpenOption): FileOp ~> Task = new (FileOp ~> Task) {
     import Task.delay
 
     override def apply[A](fa: FileOp[A]): Task[A] = fa match {
-      case Create(StringPath(path)) => delay {
-        NIOFileHandle(touch(Paths.get(path)))
-      }
-      case Create(NIOPath(jpath)) => delay {
-        NIOFileHandle(touch(jpath))
-      }
-      case Read(NIOFileHandle(jpath)) => delay { Files.readAllBytes(jpath) }
-      case Write(NIOFileHandle(jpath), contents) => delay {
-        NIOFileHandle(Files.write(jpath,contents,options))
-      }
-      case op => sys.error(s"$op is not supported by java.io.")
+      case Create(path)          => delay(touch(path))
+      case Read(path)            => delay(Files.readAllBytes(path))
+      case Write(path, contents) => delay(Files.write(path, contents, options))
     }
   }
 
@@ -40,6 +29,4 @@ object nio {
       Files.createFile(jPath)
     }
   }
-
-  def writeWholeFile(jPath: JPath, contents: Array[Byte]) = Files.write(jPath,contents)
 }
