@@ -2,13 +2,10 @@ package com.github.milyardo.freeio
 
 import java.nio.file.{Paths, StandardOpenOption}
 
-import com.github.milyardo.freeio.file.FileAlg
-
 /**
   * Created by zpowers on 3/12/16.
   */
 object FileApp extends App {
-
 
   def prog[F,P,C](fileAlg: FileAlg[F,P,C])(find: String => P) = {
     import fileAlg._
