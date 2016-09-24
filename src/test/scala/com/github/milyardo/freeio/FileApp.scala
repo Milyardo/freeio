@@ -7,20 +7,20 @@ import java.nio.file.{Paths, StandardOpenOption}
   */
 object FileApp extends App {
 
-  def prog[F,P,C](fileAlg: FileAlg[F,P,C])(find: String => P) = {
+  def prog[F, P, C](fileAlg: FileAlg[F, P, C])(find: String => P) = {
     import fileAlg._
     for {
-      aFile <- create(find("aFile.txt"))
+      aFile    <- create(find("aFile.txt"))
       contents <- read(aFile)
     } yield contents.map(_.toChar).mkString(",")
   }
 
-  def prog2[F,P,C](fileAlg: FileAlg[F,P,C])(find: String => P) = {
+  def prog2[F, P, C](fileAlg: FileAlg[F, P, C])(find: String => P) = {
     import fileAlg._
 
     for {
-      bFile <- create(find("bFile.txt"))
-      res <- write(bFile, "Goodbye, World!".getBytes)
+      bFile    <- create(find("bFile.txt"))
+      res      <- write(bFile, "Goodbye, World!".getBytes)
       contents <- read(bFile)
     } yield contents.map(_.toChar).mkString(",")
   }
@@ -36,12 +36,12 @@ object FileApp extends App {
 
   {
     println(
-      benchMark(prog(nio)(n => Paths.get(n)).foldMap(nio.withJavaNIO(StandardOpenOption.CREATE))
-        .unsafePerformSyncAttempt)
+      benchMark(
+        prog(nio)(n => Paths.get(n)).foldMap(nio.withJavaNIO(StandardOpenOption.CREATE)).unsafePerformSyncAttempt)
     )
     println(
-      benchMark(prog2(nio)(n => Paths.get(n)).foldMap(nio.withJavaNIO(StandardOpenOption.CREATE))
-        .unsafePerformSyncAttempt)
+      benchMark(
+        prog2(nio)(n => Paths.get(n)).foldMap(nio.withJavaNIO(StandardOpenOption.CREATE)).unsafePerformSyncAttempt)
     )
   }
 
@@ -60,8 +60,8 @@ object FileApp extends App {
 
   def benchMark[A](a: => A) = {
     val start = System.nanoTime()
-    val res = a
-    val end = System.nanoTime()
+    val res   = a
+    val end   = System.nanoTime()
     (a, end - start)
   }
 }

@@ -1,6 +1,5 @@
 package com.github.milyardo.freeio
 
-import com.github.milyardo.freeio.file._
 
 import scalaz.concurrent.Task
 import scalaz.~>

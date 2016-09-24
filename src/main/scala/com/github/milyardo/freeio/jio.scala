@@ -3,8 +3,6 @@ package com.github.milyardo.freeio
 import java.io.{File => JFile}
 import java.io.{FileOutputStream, FileInputStream}
 
-import com.github.milyardo.freeio.file._
-
 import scalaz._
 import scalaz.concurrent.Task
 
