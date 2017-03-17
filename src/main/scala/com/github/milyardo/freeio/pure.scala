@@ -18,4 +18,4 @@ object pure extends FileAlg[PureFile, String, Nothing] {
   }
 }
 
-case class PureFile(contents: Array[Byte])
+final case class PureFile(contents: Array[Byte]) extends AnyVal

@@ -62,6 +62,6 @@ object FileApp extends App {
     val start = System.nanoTime()
     val res   = a
     val end   = System.nanoTime()
-    (a, end - start)
+    (res, end - start)
   }
 }
